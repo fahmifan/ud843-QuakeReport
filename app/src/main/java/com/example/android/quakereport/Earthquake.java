@@ -2,10 +2,10 @@ package com.example.android.quakereport;
 
 public class Earthquake  {
     private String city;
-    private int mags;
+    private double mags;
     private String date;
 
-    public Earthquake(String city, int mags, String date) {
+    public Earthquake(String city, double mags, String date) {
         this.city = city;
         this.mags = mags;
         this.date = date;
@@ -15,7 +15,7 @@ public class Earthquake  {
         return date;
     }
 
-    public int getMags() {
+    public double getMags() {
         return mags;
     }
 
