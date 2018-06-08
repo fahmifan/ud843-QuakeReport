@@ -15,9 +15,10 @@
  */
 package com.example.android.quakereport;
 
-import android.annotation.SuppressLint;
+import android.app.LoaderManager;
+import android.content.AsyncTaskLoader;
 import android.content.Context;
-import android.os.AsyncTask;
+import android.content.Loader;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.widget.ListView;
@@ -26,15 +27,14 @@ import android.widget.Toast;
 import java.io.IOException;
 import java.util.ArrayList;
 
-public class EarthquakeActivity extends AppCompatActivity {
+public class EarthquakeActivity extends AppCompatActivity implements LoaderManager.LoaderCallbacks<ArrayList<Earthquake>> {
 
-    public static final String LOG_TAG = EarthquakeActivity.class.getName();
-    ArrayList<Earthquake> earthquakes = null;
-
-    Context mContext;
-    private final String USGS_URL = "https://earthquake.usgs.gov/fdsnws/event/1/query?format=geojson&starttime=2014-01-01&endtime=2014-01-02";
+    private ArrayList<Earthquake> earthquakes = null;
+    private Context mContext;
+    private static final String USGS_URL = "https://earthquake.usgs.gov/fdsnws/event/1/query?format=geojson&starttime=2014-01-01&endtime=2014-01-02";
     private EarthquakeAdapter earthquakeAdapter;
     private ListView listView;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -43,11 +43,11 @@ public class EarthquakeActivity extends AppCompatActivity {
         mContext = this;
         earthquakes = new ArrayList<>();
         earthquakeAdapter = new EarthquakeAdapter(mContext, earthquakes);
+        EarthquakeLoader task = new EarthquakeLoader(mContext);
 
-        EarthquakeAsync task = new EarthquakeAsync();
-        task.execute(USGS_URL);
-
+        task.startLoading();
         listView.setAdapter(earthquakeAdapter);
+        getLoaderManager().initLoader(0, null, this).forceLoad();
     }
 
     private void updateUI() {
@@ -62,25 +62,39 @@ public class EarthquakeActivity extends AppCompatActivity {
         this.earthquakeAdapter = earthquakeAdapter;
     }
 
-    @SuppressLint("StaticFieldLeak")
-    private class EarthquakeAsync extends AsyncTask<String, Void, ArrayList<Earthquake>> {
-        @Override
-        protected ArrayList<Earthquake> doInBackground(String... urls) {
-            try {
-                 return QueryUtils.fetchData(urls[0]);
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-            return null;
+    @Override
+    public Loader<ArrayList<Earthquake>> onCreateLoader(int id, Bundle args) {
+        Toast.makeText(mContext, "loader created", Toast.LENGTH_SHORT).show();
+        return new EarthquakeLoader(mContext);
+    }
+
+    @Override
+    public void onLoadFinished(Loader<ArrayList<Earthquake>> loader, ArrayList<Earthquake> result) {
+        Toast.makeText(mContext, "Loader Finished", Toast.LENGTH_SHORT).show();
+        earthquakeAdapter = new EarthquakeAdapter(mContext, earthquakes);
+        setEarthquakes(result);
+        setEarthquakeAdapter(new EarthquakeAdapter(mContext, earthquakes));
+        updateUI();
+    }
+
+    @Override
+    public void onLoaderReset(Loader<ArrayList<Earthquake>> loader) {
+        setEarthquakes(new ArrayList<Earthquake>());
+    }
+
+    private static class EarthquakeLoader extends AsyncTaskLoader<ArrayList<Earthquake>> {
+
+        public EarthquakeLoader(Context context) {
+            super(context);
         }
 
         @Override
-        protected void onPostExecute(ArrayList<Earthquake> results) {
-//            earthquakes = results;
-//            earthquakeAdapter = new EarthquakeAdapter(mContext, earthquakes);
-            setEarthquakes(results);
-            setEarthquakeAdapter(new EarthquakeAdapter(mContext, earthquakes));
-            updateUI();
+        public ArrayList<Earthquake> loadInBackground() {
+            try {return QueryUtils.fetchData(USGS_URL);}
+            catch (IOException e) {
+                e.printStackTrace();
+                return null;
+            }
         }
     }
 }

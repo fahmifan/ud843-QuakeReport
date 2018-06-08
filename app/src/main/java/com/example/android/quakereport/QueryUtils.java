@@ -29,8 +29,13 @@ import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.nio.charset.Charset;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Date;
+import java.util.Locale;
+import java.util.TimeZone;
 
 /**
  * Helper methods related to requesting and receiving earthquake data from USGS.
@@ -81,8 +86,15 @@ public final class QueryUtils {
                 double magnitude = properties.getDouble("mag");
                 String place = properties.getString("place");
                 String city = place.substring(place.indexOf("of ") + 2);
-                Date date = new Date(Long.parseLong(properties.getString("time")));
-                String formattedDate = date.getDate() + "";
+
+                DateFormat df = new SimpleDateFormat("dd/MM/yyyy", Locale.GERMANY);
+//                df.setTimeZone(TimeZone.getTimeZone("GMT-4"));
+
+                Long timestamp = Long.parseLong(properties.getString("time"));
+                Date date = new Date(timestamp);
+
+                String formattedDate;
+                formattedDate = df.format(date);
 
                 earthquakes.add(new Earthquake(city, magnitude, formattedDate));
             }
