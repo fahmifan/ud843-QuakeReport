@@ -19,9 +19,14 @@ import android.app.LoaderManager;
 import android.content.AsyncTaskLoader;
 import android.content.Context;
 import android.content.Loader;
+import android.net.ConnectivityManager;
+import android.net.Network;
+import android.net.NetworkInfo;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
+import android.view.View;
 import android.widget.ListView;
+import android.widget.ProgressBar;
 import android.widget.Toast;
 
 import java.io.IOException;
@@ -29,57 +34,60 @@ import java.util.ArrayList;
 
 public class EarthquakeActivity extends AppCompatActivity implements LoaderManager.LoaderCallbacks<ArrayList<Earthquake>> {
 
-    private ArrayList<Earthquake> earthquakes = null;
-    private Context mContext;
     private static final String USGS_URL = "https://earthquake.usgs.gov/fdsnws/event/1/query?format=geojson&starttime=2014-01-01&endtime=2014-01-02";
+    private ArrayList<Earthquake> earthquakes = null;
     private EarthquakeAdapter earthquakeAdapter;
     private ListView listView;
+    private Context mContext;
+    private ConnectivityManager connManager;
+    private ProgressBar spinner;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
         setContentView(R.layout.earthquake_activity);
+        spinner = findViewById(R.id.progress_bar);
         listView = findViewById(R.id.list);
+
         mContext = this;
         earthquakes = new ArrayList<>();
         earthquakeAdapter = new EarthquakeAdapter(mContext, earthquakes);
-        EarthquakeLoader task = new EarthquakeLoader(mContext);
+        connManager = (ConnectivityManager) mContext.getSystemService(Context.CONNECTIVITY_SERVICE);
 
-        task.startLoading();
-        listView.setAdapter(earthquakeAdapter);
-        getLoaderManager().initLoader(0, null, this).forceLoad();
-    }
+        NetworkInfo activeNetwork = connManager != null ? connManager.getActiveNetworkInfo() : null;
+        boolean isConnected = activeNetwork != null && activeNetwork.isConnectedOrConnecting();
 
-    private void updateUI() {
-        listView.setAdapter(earthquakeAdapter);
-    }
-
-    public void setEarthquakes(ArrayList<Earthquake> earthquakes) {
-        this.earthquakes = earthquakes;
-    }
-
-    public void setEarthquakeAdapter(EarthquakeAdapter earthquakeAdapter) {
-        this.earthquakeAdapter = earthquakeAdapter;
+        if(isConnected) {
+            getLoaderManager().initLoader(0, null, this).forceLoad();
+            listView.setAdapter(earthquakeAdapter);
+        } else {
+            spinner.setVisibility(View.INVISIBLE);
+            findViewById(R.id.no_internet).setVisibility(View.VISIBLE);
+        }
     }
 
     @Override
     public Loader<ArrayList<Earthquake>> onCreateLoader(int id, Bundle args) {
-        Toast.makeText(mContext, "loader created", Toast.LENGTH_SHORT).show();
         return new EarthquakeLoader(mContext);
     }
 
     @Override
     public void onLoadFinished(Loader<ArrayList<Earthquake>> loader, ArrayList<Earthquake> result) {
         Toast.makeText(mContext, "Loader Finished", Toast.LENGTH_SHORT).show();
+
+        earthquakes = result;
         earthquakeAdapter = new EarthquakeAdapter(mContext, earthquakes);
-        setEarthquakes(result);
-        setEarthquakeAdapter(new EarthquakeAdapter(mContext, earthquakes));
-        updateUI();
+
+        if(result != null) listView.setAdapter(earthquakeAdapter);
+        else listView.setEmptyView(findViewById(R.id.empty));
+
+        spinner.setVisibility(View.INVISIBLE);
     }
 
     @Override
     public void onLoaderReset(Loader<ArrayList<Earthquake>> loader) {
-        setEarthquakes(new ArrayList<Earthquake>());
+        earthquakes = new ArrayList<Earthquake>();
     }
 
     private static class EarthquakeLoader extends AsyncTaskLoader<ArrayList<Earthquake>> {

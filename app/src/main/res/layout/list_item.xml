@@ -3,44 +3,62 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:orientation="horizontal">
+    android:orientation="horizontal"
+    android:gravity="center_vertical">
 
+    <!--Magnitude-->
     <TextView
-        android:id="@+id/mags"
-        android:layout_width="wrap_content"
-        android:layout_height="60dp"
-        android:layout_alignParentLeft="true"
+        android:id="@+id/magnitude"
+        android:layout_width="36dp"
+        android:layout_height="36dp"
         android:layout_centerVertical="true"
         android:gravity="center"
-        android:layout_centerHorizontal="true"
-        android:padding="8dp"
-        android:text="12"
+        android:layout_margin="8dp"
+        android:text="7.2"
         android:textAlignment="center"
-        android:textSize="18dp" />
+        android:textSize="14sp"
+        android:background="@drawable/circle"
+        android:textColor="#fff"/>
 
-    <TextView
-        android:id="@+id/city"
-        android:layout_width="wrap_content"
+    <!--Location-->
+    <LinearLayout
+        android:layout_marginLeft="8dp"
+        android:id="@+id/location"
+        android:layout_width="200dp"
         android:layout_height="wrap_content"
-        android:minHeight="60dp"
-        android:layout_marginLeft="18dp"
-        android:layout_marginRight="18dp"
-        android:layout_toRightOf="@id/mags"
-        android:padding="8dp"
+        android:minWidth="200dp"
+        android:layout_centerVertical="true"
+        android:layout_toRightOf="@id/magnitude"
         android:gravity="center_vertical"
-        android:text="City"
-        android:textSize="18dp" />
+        android:orientation="vertical">
+
+        <TextView
+            android:id="@+id/nearby"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Near by"/>
+
+        <TextView
+            android:id="@+id/city"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:maxWidth="200dp"
+            android:paddingRight="4dp"
+            android:textSize="18dp"
+            android:text="Lorem ipsum dolor sit amet Lorem "
+            android:textColor="#333"/>
+    </LinearLayout>
 
     <TextView
+        android:layout_alignParentRight="true"
         android:id="@+id/date"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_alignParentRight="true"
-        android:layout_centerHorizontal="true"
         android:gravity="center_vertical"
         android:layout_marginRight="8dp"
         android:minHeight="60dp"
         android:padding="8dp"
         android:text="2017-20-02"
-        android:textSize="18dp" />
+        android:textSize="12dp"/>
+
 </RelativeLayout>
